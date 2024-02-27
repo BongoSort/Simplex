@@ -196,16 +196,17 @@ class Dictionary:
         pivot_coefficient = self.C[l + 1, k + 1]
 
         # Update elements in matrix C
-        self.C[l + 1] = self.C[l + 1] / pivot_coefficient
+        self.C[l + 1] = -1/pivot_coefficient * self.C[l + 1]
         for index, row in enumerate(self.C):
             if index != l + 1:
-                row_scale = self.C[index, k + 1] * self.C[l + 1]
-                self.C[index] = self.C[index] - row_scale
-                self.C[index, k + 1] = row_scale[k+1] / pivot_coefficient
+                element_from_pivot_column = self.C[index, k + 1]
+                pivot_row = self.C[l + 1]
+                row_scale = element_from_pivot_column * pivot_row
+                self.C[index] = self.C[index] + row_scale
+                self.C[index, k + 1] = - row_scale[k+1] / pivot_coefficient
         
         # Update pivot coefficient and pivot row
-        self.C[l + 1, :] = -1 * self.C[l + 1, :]
-        self.C[l + 1, k + 1] = 1 / pivot_coefficient
+        self.C[l + 1, k + 1] = 1/pivot_coefficient
 
         # Update N and B
         self.N[k], self.B[l] = self.B[l], self.N[k]
@@ -305,9 +306,13 @@ def run_examples():
     # Example 1
     c, A, b = example1()
     D = Dictionary(c, A, b)
+
+    ### TEMPORARY
     print(D.N)
     print(D.B)
     print(D.C)
+    ### TEMPORARY
+
     print("Example 1 with Fraction")
     print("Initial dictionary:")
     print(D)
@@ -318,7 +323,7 @@ def run_examples():
     D.pivot(2, 2)
     print(D)
     print()
-    
+    return
 
     D = Dictionary(c, A, b, np.float64)
     print("Example 1 with np.float64")
@@ -349,7 +354,7 @@ def run_examples():
     D.pivot(0, 1)
     print(D)
     print()
-    return
+    
 
     # Solve Example 1 using lp_solve
     c, A, b = example1()
