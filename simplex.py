@@ -100,9 +100,9 @@ class Dictionary:
         if dtype in [int, Fraction]:
             dtype = object
             if c is not None:
-                c = np.array(c, np.object)
-            A = np.array(A, np.object)
-            b = np.array(b, np.object)
+                c = np.array(c, object) # Måske fjern np. her og bare skriv object
+            A = np.array(A, object) # Måske fjern np. her
+            b = np.array(b, object) # Måske fjern np. her
         self.C = np.empty([m + 1, n + 1 + (c is None)], dtype=dtype)
         self.C[0, 0] = self.dtype(0)
         if c is None:
@@ -190,10 +190,122 @@ class Dictionary:
         # Pivot Dictionary with N[k] entering and B[l] leaving
         # Performs integer pivoting if self.dtype==int
 
+        # k = entering variable (column index)
+        # l = leaving variable (row index)
+
         # save pivot coefficient
         a = self.C[l + 1, k + 1]
+
+        new_C = self.C
+
+        pivot_col = new_C[:, k + 1]
+        pivot_row = new_C[l + 1, :]
+        
+        n, m = new_C.shape
+
+        for i in range(0, n):
+            for j in range(0, m):
+                print(pivot_row[i])
+                if (i==1):
+                    print(f'pivot_col[j]: {pivot_col[j]}')
+                    print(f'pivot_row[i]: {pivot_row[i]}')
+                new_C[i, j] = self.C[i, j] - (pivot_col[j] * pivot_row[i]) / a
+
+        new_C[l + 1, :] = - pivot_row / a
+        new_C[:, k + 1] = pivot_col / a
+        new_C[l + 1, k + 1] = 1 / a
+        self.C = new_C
+
+
+    #     old_tableau = self.C
+       
+    #    # SVEND TEH MASTER
+    #     new_tableau = old_tableau / a
+    #     # Update row
+    #     for i, j in enumerate(new_tableau):
+    #         if i != l + 1:
+    #             print(f'Hvad er i: {i}\n')
+
+    #             # pivot række ganget med i'te element i pivotkolonnen
+    #             mul = np.array(new_tableau[l+1]) * old_tableau[i][k+1]
+
+    #             # print(f'np.array(new_tableau[l+1]) {np.array(new_tableau[l+1])}\n')
+    #             # print(f'old_tableau[i][k+1] {old_tableau[i][k+1]}\n')
+    #             print(f"mul variable\n", mul)
+    #             new_tableau[i] = np.array(old_tableau[i]) - mul
+
+    #     self.C = new_tableau
+        
+        # Rune ....
+        # c = self.C[k] 
+        # b = self.C[l]
+        # for k,l in enumerate(self.C)
+        # d = self.C[l][k]
+        # new_tableau[i][;] = -b / a 
+        # new_tableau[;][j] = c / a
+        # new_tableau[i][j] = d - (b * c / a) 
+        
+#         iter = 0;
+# while max(c) > eps,
+# % pick largest coefficient
+# [cj, col] = max(c);
+# Acol = A(:,col);
+# % select leaving variable
+# if sum(Acol<-eps) == 0,
+# opt = -1; % unbounded
+# ’unbounded’
+# break;
+# end
+# nums = b.*(Acol<-eps);
+# dens = -Acol.*(Acol<-eps);
+# [t, row] = min(nums./dens);
+# Arow = A(row,:);
+# a = A(row,col); % pivot element
+# A = A - Acol*Arow/a;
+# A(row,:) = -Arow/a;
+# A(:,col) = Acol/a;
+# A(row,col) = 1/a;
+# brow = b(row);
+# b = b - brow*Acol/a;
+# b(row) = -brow/a;
+# ccol = c(col);
+# c = c - ccol*Arow/a;
+# c(col) = ccol/a;
+# iter = iter+1;
+# end
+        # self.C[l + 1] = [coeff / a for coeff in self.C[l + 1]]
+
+        # # Update columns
+        # for i in range(len(self.C)):
+        #     if i != l + 1:
+        #         row_scale = [y * self.C[i][k + 1] for y in self.C[l + 1]]
+        #         self.C[i] = [x - y for x, y in zip(self.C[i], row_scale)]
+        
+        # # runes boomer hack
+        # for i in range(len(self.C)):
+             
+
+        # Update B and N
+        self.N[k], self.B[l] = self.B[l], self.N[k]
+
+        
         # TODO
         pass
+
+# def pivot(self, pivot_index):
+#     ''' Perform operations on pivot.
+#     '''
+#     j, i = pivot_index
+
+#     pivot = self.tableau[i][j]
+#     self.tableau[i] = [element / pivot for element in self.tableau[i]]
+    
+#     for index, row in enumerate(self.tableau):
+#         if index != i:
+#             row_scale = [y * self.tableau[index][j] for y in self.tableau[i]]
+#             self.tableau[index] = [x - y for x, y in zip(self.tableau[index], row_scale)]
+
+#     self.departing[i] = self.entering[j]
 
 
 class LPResult(Enum):
@@ -217,6 +329,7 @@ def bland(D, eps):
 
     k = l = None
     # TODO
+
     return k, l
 
 
@@ -289,16 +402,21 @@ def run_examples():
     # Example 1
     c, A, b = example1()
     D = Dictionary(c, A, b)
+    print(D.N)
+    print(D.B)
+    print(D.C)
     print("Example 1 with Fraction")
     print("Initial dictionary:")
     print(D)
     print("x1 is entering and x4 leaving:")
     D.pivot(0, 0)
     print(D)
+    return
     print("x3 is entering and x6 leaving:")
     D.pivot(2, 2)
     print(D)
     print()
+    
 
     D = Dictionary(c, A, b, np.float64)
     print("Example 1 with np.float64")
@@ -394,3 +512,12 @@ def run_examples():
     print("x2 is entering and x4 leaving:")
     D.pivot(1, 1)
     print(D)
+
+def main():
+    print("Running simplex.py:")
+    run_examples()
+
+if __name__ == "__main__":
+    main()
+
+
