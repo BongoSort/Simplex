@@ -2,6 +2,14 @@ import numpy as np
 from fractions import Fraction
 from enum import Enum
 
+def bland_example():
+    return (
+        np.array([10, -57, -9, -24]),
+        np.array([[0.5, -5.5, -2.5, 9], 
+                  [0.5, -1.5, -0.5, 1], 
+                  [1, 0, 0, 0]]),
+        np.array([0, 0, 1]),
+    )
 
 def example1():
     return (
@@ -192,6 +200,9 @@ class Dictionary:
         # k = entering variable (column index)
         # l = leaving variable (row index)
 
+        ### FOR TESTING PURPOSES
+        bland(self, 0.0001)
+
         # save pivot coefficient
         pivot_coefficient = self.C[l + 1, k + 1]
 
@@ -232,6 +243,30 @@ def bland(D, eps):
     # Otherwise D.B[l] is a leaving variable
 
     k = l = None
+
+    # FIND ENTERING VARIABLE
+    possible_entering_vars = [D.N[i] for i in np.where(D.C[0, 1:] > eps)[0]]
+    try:
+        k = min(possible_entering_vars)
+    except ValueError:
+        return k, l
+
+    print(f"Bland's method found entering variable: x{k}")
+    
+    if k is None:
+        return k, l
+
+    # # FIND LEAVING VARIABLE
+    # for i in range(1, vars):
+    #     l = 1
+    #     # if i in D.B and D.C[i, k] < eps:
+    #     #     l = i
+    #     #     break
+
+    # print("Bland found leaving variable: ", l)
+
+
+    
     # TODO
 
     return k, l
@@ -306,13 +341,6 @@ def run_examples():
     # Example 1
     c, A, b = example1()
     D = Dictionary(c, A, b)
-
-    ### TEMPORARY
-    print(D.N)
-    print(D.B)
-    print(D.C)
-    ### TEMPORARY
-
     print("Example 1 with Fraction")
     print("Initial dictionary:")
     print(D)
@@ -323,7 +351,7 @@ def run_examples():
     D.pivot(2, 2)
     print(D)
     print()
-    return
+    
 
     D = Dictionary(c, A, b, np.float64)
     print("Example 1 with np.float64")
@@ -427,6 +455,16 @@ def main():
     run_examples()
 
 if __name__ == "__main__":
-    main()
+    c, A, b = bland_example()
+    D = Dictionary(c, A, b)
+    print(D)
+    D.pivot(0, 0)
+    print(D)
+    D.pivot(1, 1)
+    print(D)
+    D.pivot(2, 0)
+    print(D)
+    bland(D, 0.0001)
+    # main()
 
 
