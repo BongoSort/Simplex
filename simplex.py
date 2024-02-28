@@ -200,9 +200,6 @@ class Dictionary:
         # k = entering variable (column index)
         # l = leaving variable (row index)
 
-        ### FOR TESTING PURPOSES
-        bland(self, 0.0001)
-
         # save pivot coefficient
         pivot_coefficient = self.C[l + 1, k + 1]
 
@@ -247,28 +244,39 @@ def bland(D, eps):
     # FIND ENTERING VARIABLE
     possible_entering_vars = [D.N[i] for i in np.where(D.C[0, 1:] > eps)[0]]
     try:
-        k = min(possible_entering_vars)
+        entering_var = min(possible_entering_vars)
+        k = np.where(D.N == entering_var)[0][0]
     except ValueError:
+        print("No entering variable found: Solution is optimal.")
         return k, l
 
-    print(f"Bland's method found entering variable: x{k}")
-    
-    if k is None:
+    # FOR TESTING
+    print(f"Possible entering variables: {possible_entering_vars}")
+    print(f"Bland's method found entering variable: x{entering_var}")
+
+    # FIND LEAVING VARIABLE
+    # Find the possible leaving indices
+    possible_leaving_indices = [i for i in np.where(D.C[1:, k + 1] < -eps)[0]]
+    if len(possible_leaving_indices) == 0:
+        print("No leaving variable found: Solution is unbounded.")
         return k, l
+    # Get possible leaving variables
+    possible_leaving_variables = [D.B[i] for i in possible_leaving_indices]
+    print(f"Possible leaving variables: {possible_leaving_variables}")
 
-    # # FIND LEAVING VARIABLE
-    # for i in range(1, vars):
-    #     l = 1
-    #     # if i in D.B and D.C[i, k] < eps:
-    #     #     l = i
-    #     #     break
+    ratios = [np.divide(D.C[i+1, 0], D.C[i+1, k + 1]) for i in possible_leaving_indices]
+    # Find the best ratio
+    best_ratio = max(ratios)
+    best_indices = np.where(np.equal(ratios, best_ratio))[0]
 
-    # print("Bland found leaving variable: ", l)
-
-
+    if len(best_indices) == 1:
+        print(f"Found leaving variable x{possible_leaving_variables[best_indices[0]]}")
+        l = possible_leaving_indices[best_indices[0]]
+    else:
+        # Bland's rule: Choose the smallest index
+        print(f"Bland's method found leaving variable: x{D.B[l]}")
+        l = min(best_indices)
     
-    # TODO
-
     return k, l
 
 
@@ -334,7 +342,20 @@ def lp_solve(
     # LPResult.OPTIMAL,D, where D is an optimal dictionary.
 
     # TODO
-    return None, None
+
+    D = Dictionary(c, A, b, dtype)
+
+    pivotrule = lambda D: bland(D, eps)
+    while True:
+        print(f"Printing dictionary before pivot:\n{D}")
+        k, l = pivotrule(D)
+        if k is None:
+            print("Optimal solution found.")
+            return LPResult.OPTIMAL, D
+        if l is None:
+            print("Unbounded solution found.")
+            return LPResult.UNBOUNDED, None
+        D.pivot(k, l)
 
 
 def run_examples():
@@ -351,6 +372,7 @@ def run_examples():
     D.pivot(2, 2)
     print(D)
     print()
+    return
     
 
     D = Dictionary(c, A, b, np.float64)
@@ -450,11 +472,7 @@ def run_examples():
     D.pivot(1, 1)
     print(D)
 
-def main():
-    print("Running simplex.py:")
-    run_examples()
-
-if __name__ == "__main__":
+def run_bland():
     c, A, b = bland_example()
     D = Dictionary(c, A, b)
     print(D)
@@ -464,7 +482,23 @@ if __name__ == "__main__":
     print(D)
     D.pivot(2, 0)
     print(D)
-    bland(D, 0.0001)
-    # main()
+    D.pivot(3, 1)
+    print(D)
+    D.pivot(0, 0)
+    print(D)
+    D.pivot(2, 1)
+    print(D)
+    D.pivot(0, 2)
+    print(D)
+    bland(D, 0.000001)
+
+def main():
+    print("Running simplex.py:")
+    c, A, b = example1()
+    lp_solve(c, A, b)
+    # run_examples()
+
+if __name__ == "__main__":
+    main()
 
 
