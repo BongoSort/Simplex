@@ -1,13 +1,16 @@
 import numpy as np
 from fractions import Fraction
 from enum import Enum
+from scipy.optimize import linprog
+from timeit import default_timer as timer
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def bland_example():
     return (
         np.array([10, -57, -9, -24]),
-        np.array([[0.5, -5.5, -2.5, 9], 
-                  [0.5, -1.5, -0.5, 1], 
-                  [1, 0, 0, 0]]),
+        np.array([[0.5, -5.5, -2.5, 9], [0.5, -1.5, -0.5, 1], [1, 0, 0, 0]]),
         np.array([0, 0, 1]),
     )
 
@@ -251,8 +254,8 @@ def bland(D, eps):
         return k, l
 
     # FOR TESTING
-    print(f"Possible entering variables: {possible_entering_vars}")
-    print(f"Bland's method found entering variable: x{entering_var}")
+    # print(f"Possible entering variables: {possible_entering_vars}")
+    # print(f"Bland's method found entering variable: x{entering_var}")
 
     # FIND LEAVING VARIABLE
     # Find the possible leaving indices
@@ -270,11 +273,11 @@ def bland(D, eps):
     best_indices = np.where(np.equal(ratios, best_ratio))[0]
 
     if len(best_indices) == 1:
-        print(f"Found leaving variable x{possible_leaving_variables[best_indices[0]]}")
+        # print(f"Found leaving variable x{possible_leaving_variables[best_indices[0]]}")
         l = possible_leaving_indices[best_indices[0]]
     else:
         # Bland's rule: Choose the smallest index
-        print(f"Bland's method found leaving variable: x{D.B[l]}")
+        # print(f"Bland's method found leaving variable: x{D.B[l]}")
         l = min(best_indices)
     
     return k, l
@@ -344,10 +347,10 @@ def lp_solve(
     # TODO
 
     D = Dictionary(c, A, b, dtype)
-
     pivotrule = lambda D: bland(D, eps)
+    print(f"Initial dictionary:\n{D}")
+
     while True:
-        print(f"Printing dictionary before pivot:\n{D}")
         k, l = pivotrule(D)
         if k is None:
             print("Optimal solution found.")
@@ -356,6 +359,7 @@ def lp_solve(
             print("Unbounded solution found.")
             return LPResult.UNBOUNDED, None
         D.pivot(k, l)
+        print(f"New Dictionary after pivot:\n{D}")
 
 
 def run_examples():
@@ -372,9 +376,8 @@ def run_examples():
     D.pivot(2, 2)
     print(D)
     print()
-    return
     
-
+    
     D = Dictionary(c, A, b, np.float64)
     print("Example 1 with np.float64")
     print("Initial dictionary:")
@@ -405,15 +408,6 @@ def run_examples():
     print(D)
     print()
     
-
-    # Solve Example 1 using lp_solve
-    c, A, b = example1()
-    print("lp_solve Example 1:")
-    res, D = lp_solve(c, A, b)
-    print(res)
-    print(D)
-    print()
-
     # Solve Example 2 using lp_solve
     c, A, b = example2()
     print("lp_solve Example 2:")
@@ -445,6 +439,7 @@ def run_examples():
     print(res)
     print(D)
     print()
+    return
 
     # Integer pivoting
     c, A, b = example1()
@@ -472,6 +467,8 @@ def run_examples():
     D.pivot(1, 1)
     print(D)
 
+    return
+
 def run_bland():
     c, A, b = bland_example()
     D = Dictionary(c, A, b)
@@ -492,11 +489,41 @@ def run_bland():
     print(D)
     bland(D, 0.000001)
 
-def main():
-    print("Running simplex.py:")
+def run_timed_example1():
+
+    # Solve Example 1 using lp_solve
     c, A, b = example1()
-    lp_solve(c, A, b)
-    # run_examples()
+    print("lp_solve Example 1:")
+    start = timer()
+    res, D = lp_solve(c, A, b)
+    end = timer()
+    print(res)
+    print(D)
+    print()
+  
+    print("%.2f" % 5.512)
+    print(f'Hvad er vores tid %.6f' % (end - start), "s")
+    
+    start2= timer()
+    res = linprog(c, A, b, method="simplex")
+    end2 = timer()
+    print(f'Hvad er tiden for simplex', end2 - start2)
+    
+    start3= timer()
+    res = linprog(c, A, b, method="highs-ds")
+    end3 = timer()
+    print(f'Hvad er tiden for highs-ds', end3 - start3)
+
+def run_random_lp(n, m, sigma):
+    c, A, b = random_lp(n, m, sigma)
+    print("lp_solve Random LP")
+    start = timer()
+    res, D = lp_solve(c, A, b)
+    end = timer()
+    print(f'Hvad er vores tid', end - start)
+
+def main():
+    run_timed_example1()
 
 if __name__ == "__main__":
     main()
