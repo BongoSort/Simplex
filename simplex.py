@@ -5,7 +5,9 @@ from scipy.optimize import linprog
 from timeit import default_timer as timer
 
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 def bland_example():
     return (
@@ -13,6 +15,7 @@ def bland_example():
         np.array([[0.5, -5.5, -2.5, 9], [0.5, -1.5, -0.5, 1], [1, 0, 0, 0]]),
         np.array([0, 0, 1]),
     )
+
 
 def example1():
     return (
@@ -111,9 +114,9 @@ class Dictionary:
         if dtype in [int, Fraction]:
             dtype = object
             if c is not None:
-                c = np.array(c, object) # Måske fjern np. her og bare skriv object
-            A = np.array(A, object) # Måske fjern np. her
-            b = np.array(b, object) # Måske fjern np. her
+                c = np.array(c, object)  # Måske fjern np. her og bare skriv object
+            A = np.array(A, object)  # Måske fjern np. her
+            b = np.array(b, object)  # Måske fjern np. her
         self.C = np.empty([m + 1, n + 1 + (c is None)], dtype=dtype)
         self.C[0, 0] = self.dtype(0)
         if c is None:
@@ -207,17 +210,17 @@ class Dictionary:
         pivot_coefficient = self.C[l + 1, k + 1]
 
         # Update elements in matrix C
-        self.C[l + 1] = -1/pivot_coefficient * self.C[l + 1]
+        self.C[l + 1] = -1 / pivot_coefficient * self.C[l + 1]
         for index, row in enumerate(self.C):
             if index != l + 1:
                 element_from_pivot_column = self.C[index, k + 1]
                 pivot_row = self.C[l + 1]
                 row_scale = element_from_pivot_column * pivot_row
                 self.C[index] = self.C[index] + row_scale
-                self.C[index, k + 1] = - row_scale[k+1] / pivot_coefficient
-        
+                self.C[index, k + 1] = -row_scale[k + 1] / pivot_coefficient
+
         # Update pivot coefficient and pivot row
-        self.C[l + 1, k + 1] = 1/pivot_coefficient
+        self.C[l + 1, k + 1] = 1 / pivot_coefficient
 
         # Update N and B
         self.N[k], self.B[l] = self.B[l], self.N[k]
@@ -267,7 +270,9 @@ def bland(D, eps):
     possible_leaving_variables = [D.B[i] for i in possible_leaving_indices]
     print(f"Possible leaving variables: {possible_leaving_variables}")
 
-    ratios = [np.divide(D.C[i+1, 0], D.C[i+1, k + 1]) for i in possible_leaving_indices]
+    ratios = [
+        np.divide(D.C[i + 1, 0], D.C[i + 1, k + 1]) for i in possible_leaving_indices
+    ]
     # Find the best ratio
     best_ratio = max(ratios)
     best_indices = np.where(np.equal(ratios, best_ratio))[0]
@@ -279,7 +284,7 @@ def bland(D, eps):
         # Bland's rule: Choose the smallest index
         # print(f"Bland's method found leaving variable: x{D.B[l]}")
         l = min(best_indices)
-    
+
     return k, l
 
 
@@ -376,8 +381,7 @@ def run_examples():
     D.pivot(2, 2)
     print(D)
     print()
-    
-    
+
     D = Dictionary(c, A, b, np.float64)
     print("Example 1 with np.float64")
     print("Initial dictionary:")
@@ -389,7 +393,6 @@ def run_examples():
     D.pivot(2, 2)
     print(D)
     print()
-    
 
     # Example 2
     c, A, b = example2()
@@ -407,7 +410,7 @@ def run_examples():
     D.pivot(0, 1)
     print(D)
     print()
-    
+
     # Solve Example 2 using lp_solve
     c, A, b = example2()
     print("lp_solve Example 2:")
@@ -469,6 +472,7 @@ def run_examples():
 
     return
 
+
 def run_bland():
     c, A, b = bland_example()
     D = Dictionary(c, A, b)
@@ -489,6 +493,7 @@ def run_bland():
     print(D)
     bland(D, 0.000001)
 
+
 def run_timed_example1():
 
     # Solve Example 1 using lp_solve
@@ -500,19 +505,22 @@ def run_timed_example1():
     print(res)
     print(D)
     print()
-  
-    print("%.2f" % 5.512)
-    print(f'Hvad er vores tid %.6f' % (end - start), "s")
-    
-    start2= timer()
+
+    time_ms1 = 1000 * (end - start)
+    print(f"Hvad er vores tid %.4f" % (time_ms1), "ms")
+
+    start2 = timer()
     res = linprog(c, A, b, method="simplex")
     end2 = timer()
-    print(f'Hvad er tiden for simplex', end2 - start2)
-    
-    start3= timer()
+    time_ms2 = 1000 * (end2 - start2)
+    print(f"Hvad er tiden for simplex %.4f" % (time_ms2), "ms")
+
+    start3 = timer()
     res = linprog(c, A, b, method="highs-ds")
     end3 = timer()
-    print(f'Hvad er tiden for highs-ds', end3 - start3)
+    time_ms3 = 1000 * (end3 - start3)
+    print(f"Hvad er tiden for highs-ds %.4f" % (time_ms3), "ms")
+
 
 def run_random_lp(n, m, sigma):
     c, A, b = random_lp(n, m, sigma)
@@ -520,12 +528,12 @@ def run_random_lp(n, m, sigma):
     start = timer()
     res, D = lp_solve(c, A, b)
     end = timer()
-    print(f'Hvad er vores tid', end - start)
+    print(f"Hvad er vores tid", end - start)
+
 
 def main():
     run_timed_example1()
 
+
 if __name__ == "__main__":
     main()
-
-
