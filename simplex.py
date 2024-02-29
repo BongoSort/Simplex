@@ -507,19 +507,19 @@ def run_timed_example1():
     print()
 
     time_ms1 = 1000 * (end - start)
-    print(f"Hvad er vores tid %.4f" % (time_ms1), "ms")
+    print(f"time for lp_solve %.4f" % (time_ms1), "ms")
 
     start2 = timer()
     res = linprog(c, A, b, method="simplex")
     end2 = timer()
     time_ms2 = 1000 * (end2 - start2)
-    print(f"Hvad er tiden for simplex %.4f" % (time_ms2), "ms")
+    print(f"time for simplex %.4f" % (time_ms2), "ms")
 
     start3 = timer()
     res = linprog(c, A, b, method="highs-ds")
     end3 = timer()
     time_ms3 = 1000 * (end3 - start3)
-    print(f"Hvad er tiden for highs-ds %.4f" % (time_ms3), "ms")
+    print(f"time for highs-ds %.4f" % (time_ms3), "ms")
 
 
 def run_random_lp(n, m, sigma):
