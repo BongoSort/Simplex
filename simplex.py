@@ -33,6 +33,14 @@ def example2():
     )
 
 
+def infeasible_example():
+    return (
+        np.array([1, 1]),
+        np.array([[1, 1], [-1, -1]]),
+        np.array([-2, 1]),
+    )
+
+
 def integer_pivoting_example():
     return np.array([5, 2]), np.array([[3, 1], [2, 5]]), np.array([7, 5])
 
@@ -270,6 +278,7 @@ def bland(D, eps):
     possible_leaving_variables = [D.B[i] for i in possible_leaving_indices]
     print(f"Possible leaving variables: {possible_leaving_variables}")
 
+    # Calculating ratios
     ratios = [
         np.divide(D.C[i + 1, 0], D.C[i + 1, k + 1]) for i in possible_leaving_indices
     ]
@@ -349,11 +358,11 @@ def lp_solve(
     # If LP has an optimal solution the return value is
     # LPResult.OPTIMAL,D, where D is an optimal dictionary.
 
-    # TODO
-
     D = Dictionary(c, A, b, dtype)
     pivotrule = lambda D: bland(D, eps)
+    print()
     print(f"Initial dictionary:\n{D}")
+    print()
 
     while True:
         k, l = pivotrule(D)
@@ -361,8 +370,17 @@ def lp_solve(
             print("Optimal solution found.")
             return LPResult.OPTIMAL, D
         if l is None:
-            print("Unbounded solution found.")
-            return LPResult.UNBOUNDED, None
+            # if any non-basic variable is positive
+
+            print("log D.N")
+            print(D.N)
+            if np.where(D.N > 0):
+                print("Unbounded solution found.")
+                return LPResult.UNBOUNDED, None
+            # if all the no-basic variables are zero or less
+            else:
+                print("Infeasible solution found.")
+                return LPResult.INFEASIBLE, None
         D.pivot(k, l)
         print(f"New Dictionary after pivot:\n{D}")
 
@@ -442,6 +460,7 @@ def run_examples():
     print(res)
     print(D)
     print()
+
     return
 
     # Integer pivoting
@@ -528,11 +547,23 @@ def run_random_lp(n, m, sigma):
     start = timer()
     res, D = lp_solve(c, A, b)
     end = timer()
-    print(f"Hvad er vores tid", end - start)
+    print(f"Time for lp_solve to solve a random_lp", end - start)
+
+
+def run_infeasible_example():
+    # Infeasible Example using lp_solve
+    c, A, b = infeasible_example()
+    print()
+    print("lp_solve Infeasible Example:")
+    res, D = lp_solve(c, A, b)
+    print(res)
+    print(D)
+    print()
 
 
 def main():
     run_timed_example1()
+    run_infeasible_example()
 
 
 if __name__ == "__main__":
