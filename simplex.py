@@ -35,9 +35,9 @@ def example2():
 
 def infeasible_example():
     return (
-        np.array([-1, -1]),
-        np.array([[1, 1], [-1, -1]]),
-        np.array([2, -1]),
+        np.array([1, 1]),
+        np.array([[-1, 1], [1, -1]]),
+        np.array([5, -5]),
     )
 
 
@@ -257,6 +257,7 @@ def bland(D, eps):
 
     # FIND ENTERING VARIABLE
     possible_entering_vars = [D.N[i] for i in np.where(D.C[0, 1:] > eps)[0]]
+    print(f"possible_entering_vars", possible_entering_vars)
     try:
         entering_var = min(possible_entering_vars)
         k = np.where(D.N == entering_var)[0][0]
@@ -272,6 +273,7 @@ def bland(D, eps):
     # Find the possible leaving indices
     possible_leaving_indices = [i for i in np.where(D.C[1:, k + 1] < -eps)[0]]
     if len(possible_leaving_indices) == 0:
+        print(f"possible_leaving_indices", possible_leaving_indices)
         print("No leaving variable found: Solution is unbounded.")
         return k, l
     # Get possible leaving variables
