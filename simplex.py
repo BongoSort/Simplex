@@ -35,9 +35,9 @@ def example2():
 
 def infeasible_example():
     return (
-        np.array([1, 1]),
+        np.array([-1, -1]),
         np.array([[1, 1], [-1, -1]]),
-        np.array([-2, 1]),
+        np.array([2, -1]),
     )
 
 
