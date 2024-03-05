@@ -305,20 +305,45 @@ def time_all_using_solver_with_method(solver, meth):
 
 
 
-def compare_data_types():
+def compare_data_types(verbose=False):
     frac_time = float_time = 0.
-    for i in range(5, 51, 5):
-        c, A, b = random_lp(i, i)
+    for i in range(1, 12):
+        size = i*5
+        c, A, b = random_lp(size, size)
         start_frac = timer()
-        lp_solve(c, A, b, dtype=Fraction)
+        lp_solve(c, A, b, dtype=Fraction, verbose=verbose)
         end_frac = timer()
         start_float = timer()
-        lp_solve(c, A, b, dtype=np.float64)
+        lp_solve(c, A, b, dtype=np.float64, verbose=verbose)
         end_float = timer()
         frac_time += end_frac - start_frac
         float_time += end_float - start_float
     print(f"Fraction time: {frac_time}")
-    print(f"Float time: {float_time}")    
+    print(f"Float time: {float_time}")
+
+def compare_scipy_methods(verbose=False):
+    lp_solve_time = simplex_time = highs_time = 0.
+    for i in range(1, 15):
+        size = i*5
+        c, A, b = random_lp(size, size)
+        start_lp = timer()
+        lp_solve(c, A, b, dtype=np.float64, verbose=verbose)
+        end_lp = timer()
+        start_simplex = timer()
+        # Linprog uses minimization, so we need to negate the objective function for both methods
+        linprog(-c, A_ub=A, b_ub=b, method="simplex")
+        end_simplex = timer()
+        start_highs = timer()
+        linprog(-c, A_ub=A, b_ub=b, method="highs-ds")
+        end_highs = timer()
+        lp_solve_time += end_lp - start_lp
+        simplex_time += end_simplex - start_simplex
+        highs_time += end_highs - start_highs
+    print(f"lp_solve time: {lp_solve_time}")
+    print(f"scipy simplex time: {simplex_time}")
+    print(f"scipy highs time: {highs_time}")
+
+
 
 
 
@@ -337,7 +362,7 @@ def main():
     # res = linprog(-c, A_ub=A, b_ub=b, method="highs-ds")
     # lp_solve(c, A, b)
     # print(res)
-    compare_data_types()
+    compare_scipy_methods()
 
 if __name__ == "__main__":
     main()

@@ -223,7 +223,7 @@ def bland(D, eps):
     else:
         # Bland's rule: Choose the smallest index
         # print(f"Bland's method found leaving variable: x{D.B[l]}")
-        l = min(best_indices)
+        l = possible_leaving_indices[min(best_indices)]
 
     return k, l
 
@@ -299,10 +299,11 @@ def lp_solve(
         if l is None:
             print("Unbounded solution found.")
             return LPResult.UNBOUNDED, None
-        print("PIVOTING")
-        D.pivot(k, l)
+        
         if verbose:
             print(f"x{D.N[k]} is entering and x{D.B[l]} is leaving:")
+        D.pivot(k, l)
+        if verbose:
             print(f"New Dictionary after pivot:\n{D}")
         
 
