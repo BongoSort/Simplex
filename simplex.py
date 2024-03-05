@@ -259,9 +259,11 @@ def largest_increase(D, eps):
     # TODO
     return k, l
 
-def create_aux_dict(D):
-    # Create auxillary dictionary
-    # TODO
+# Create auxillary dictionary from infeasible dictionary D
+def create_aux_dict(c, A, b, dtype):
+    c_aux = np.append(c, -1)
+    A_aux = np.c_[A, -np.ones(A.shape[0], dtype=dtype)]
+    D = Dictionary(c_aux, A_aux, b, dtype=dtype)
     return D
 
 
@@ -292,9 +294,12 @@ def lp_solve(
 
     ### PHASE 1
     D = Dictionary(c, A, b, dtype)
-    # Skip phase 1 of dictionary is feasible
+    # Skip phase 1 if dictionary is feasible
     if b.min() < 0:
-        a = create_aux_dict()
+        D_aux = create_aux_dict(c, A, b, dtype)
+        entering = D_aux.N[2]
+        print(f"Entering variable: x{entering}")
+        # D_aux.pivot(D)
 
     
     
@@ -321,4 +326,11 @@ def lp_solve(
         if verbose:
             print(f"New Dictionary after pivot:\n{D}")
         
+if __name__ == "__main__":
+    c, A, b = (
+        np.array([-2, -1]),
+        np.array([[-1, 1], [-1, -2], [0, 1]]),
+        np.array([-1, -2, 1]),
+    )
+    lp_solve(c, A, b, dtype=Fraction, eps=0, pivotrule=lambda D: bland(D, eps=0), verbose=False)
 
