@@ -381,7 +381,7 @@ def run_examples():
     D.pivot(2, 2)
     print(D)
     print()
-
+    # Example 1 float
     D = Dictionary(c, A, b, np.float64)
     print("Example 1 with np.float64")
     print("Initial dictionary:")
@@ -531,8 +531,58 @@ def run_random_lp(n, m, sigma):
     print(f"Hvad er vores tid", end - start)
 
 
+def time_all_using_solver(solver):
+
+    c, A, b = example1()
+    start = timer()
+    solver(c, A, b)
+    end = timer()
+
+    c, A, b = example2()
+    start2 = timer()
+    solver(c, A, b)
+    end2 = timer()
+
+    c, A, b = bland_example()
+    start3 = timer()
+    solver(c, A, b)
+    end3 = timer()
+
+    c, A, b = integer_pivoting_example()
+    start4 = timer()
+    solver(c, A, b)
+    end4 = timer()
+
+    c, A, b = exercise2_5()
+    start5 = timer()
+    solver(c, A, b)
+    end5 = timer()
+
+    c, A, b = exercise2_6()
+    start6 = timer()
+    solver(c, A, b)
+    end6 = timer()
+
+    c, A, b = exercise2_7()
+    start7 = timer()
+    solver(c, A, b)
+    end7 = timer()
+
+    time_ms1 = 1000 * (
+        (end - start)
+        + (end2 - start2)
+        + (end3 - start3)
+        + (end4 - start4)
+        + (end5 - start5)
+        + (end6 - start6)
+        + (end7 - start7)
+    )
+    print(f"timing for all exercises %.4f" % (time_ms1), "ms")
+
+
 def main():
-    run_timed_example1()
+    time_all_using_solver(lp_solve)
+    time_all_using_solver(linprog)
 
 
 if __name__ == "__main__":
