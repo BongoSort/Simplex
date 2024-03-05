@@ -67,8 +67,7 @@ def random_lp(n, m, sigma=10):
         np.round(sigma * np.abs(np.random.randn(m))),
     )
 
-def run_examples():
-    # Example 1
+def run_example1_fraction():
     c, A, b = example1()
     D = Dictionary(c, A, b)
     print("Example 1 with Fraction")
@@ -82,7 +81,8 @@ def run_examples():
     print(D)
     print()
 
-    # Example 1 float
+def run_example1_float():
+    c, A, b = example1()
     D = Dictionary(c, A, b, np.float64)
     print("Example 1 with np.float64")
     print("Initial dictionary:")
@@ -95,7 +95,8 @@ def run_examples():
     print(D)
     print()
 
-    # Example 2
+# Example for auxiliary dictionary in textbook
+def run_example2():
     c, A, b = example2()
     print("Example 2")
     print("Auxillary dictionary")
@@ -111,6 +112,16 @@ def run_examples():
     D.pivot(0, 1)
     print(D)
     print()
+
+def run_all_examples():
+    # Example 1
+    run_example1_fraction()
+
+    # Example 1 float
+    run_example1_float()
+
+    # Example 2
+    run_example2()
 
     # Solve Example 2 using lp_solve
     c, A, b = example2()
@@ -304,7 +315,7 @@ def time_all_using_solver_with_method(solver, meth):
     print(f"timing for all exercises %.4f" % (time_ms1), "ms")
 
 
-
+# Comparint the time for lp_solve on feasible dictionaries with different data types
 def compare_data_types(verbose=False):
     frac_time = float_time = 0.
     for i in range(1, 12):
@@ -318,9 +329,11 @@ def compare_data_types(verbose=False):
         end_float = timer()
         frac_time += end_frac - start_frac
         float_time += end_float - start_float
-    print(f"Fraction time: {frac_time}")
-    print(f"Float time: {float_time}")
+        print(f"Time for size {size} x {size}: Fraction {round((end_frac - start_frac) * 1000, 1)} ms, Float {round((end_float - start_float) * 1000, 1)} ms")
+    print(f"Total time with dtype=Fraction is: %.4f" % (frac_time), "seconds")
+    print(f"Total time with dtype=np.float64 is: %.4f" % (float_time), "seconds")
 
+# Comparing the time for different solvers on feasible dictionaries with data type np.float64
 def compare_scipy_methods(verbose=False):
     lp_solve_time = simplex_time = highs_time = 0.
     for i in range(1, 15):
@@ -339,30 +352,20 @@ def compare_scipy_methods(verbose=False):
         lp_solve_time += end_lp - start_lp
         simplex_time += end_simplex - start_simplex
         highs_time += end_highs - start_highs
-    print(f"lp_solve time: {lp_solve_time}")
-    print(f"scipy simplex time: {simplex_time}")
-    print(f"scipy highs time: {highs_time}")
-
-
+        print(f"Time for size {size} x {size}: lp_solve {round((end_lp - start_lp) * 1000, 1)} ms, Simplex {round((end_simplex - start_simplex) * 1000, 1)} ms, Highs {round((end_highs - start_highs) * 1000, 1)} ms")
+    print(f"Total time for lp_solve is: %.4f" % (lp_solve_time), "seconds")
+    print(f"Total time for Simplex is: %.4f" % (simplex_time), "seconds")
+    print(f"Total time for Highs is: %.4f" % (highs_time), "seconds")
 
 
 
 def main():
-    # time_all_using_solver(lp_solve)
-    # time_all_using_solver_with_method(linprog, "simplex")
-    # time_all_using_solver_with_method(linprog, "highs-ds")
-    # c, A, b = random_lp(10, 10)
-    # D = Dictionary(c, A, b)
-    # print(D)
-    # res, D = lp_solve(c, A, b) 
-    # print(res)
-    # print(D)
-    
-    # c, A, b = exercise2_6()
-    # res = linprog(-c, A_ub=A, b_ub=b, method="highs-ds")
-    # lp_solve(c, A, b)
-    # print(res)
-    compare_scipy_methods()
+    c, A, b = exercise2_5()
+    res = linprog(-c, A_ub=A, b_ub=b, method="highs-ds")
+    print(res)
+    res, D = lp_solve(c, A, b)
+    print(res, "\n", D)
+
 
 if __name__ == "__main__":
     main()

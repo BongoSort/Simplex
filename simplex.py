@@ -53,9 +53,9 @@ class Dictionary:
         if dtype in [int, Fraction]:
             dtype = object
             if c is not None:
-                c = np.array(c, object)  # Måske fjern np. her og bare skriv object
-            A = np.array(A, object)  # Måske fjern np. her
-            b = np.array(b, object)  # Måske fjern np. her
+                c = np.array(c, object)
+            A = np.array(A, object)
+            b = np.array(b, object)
         self.C = np.empty([m + 1, n + 1 + (c is None)], dtype=dtype)
         self.C[0, 0] = self.dtype(0)
         if c is None:
@@ -192,7 +192,7 @@ def bland(D, eps):
         entering_var = min(possible_entering_vars)
         k = np.where(D.N == entering_var)[0][0]
     except ValueError:
-        print("No entering variable found: Solution is optimal.")
+        # print("No entering variable found: Solution is optimal.")
         return k, l
 
     # FOR TESTING
@@ -203,7 +203,7 @@ def bland(D, eps):
     # Find the possible leaving indices
     possible_leaving_indices = [i for i in np.where(D.C[1:, k + 1] < -eps)[0]]
     if len(possible_leaving_indices) == 0:
-        print("No leaving variable found: Solution is unbounded.")
+        # print("No leaving variable found: Solution is unbounded.")
         return k, l
     # Get possible leaving variables
 
@@ -217,13 +217,9 @@ def bland(D, eps):
     best_ratio = max(ratios)
     best_indices = np.where(np.equal(ratios, best_ratio))[0]
 
-    if len(best_indices) == 1:
-        # print(f"Found leaving variable x{possible_leaving_variables[best_indices[0]]}")
-        l = possible_leaving_indices[best_indices[0]]
-    else:
-        # Bland's rule: Choose the smallest index
-        # print(f"Bland's method found leaving variable: x{D.B[l]}")
-        l = possible_leaving_indices[min(best_indices)]
+    # Bland's rule: Choose the smallest index
+    # print(f"Bland's method found leaving variable: x{D.B[l]}")
+    l = possible_leaving_indices[min(best_indices)]
 
     return k, l
 
@@ -259,12 +255,6 @@ def largest_increase(D, eps):
     # TODO
     return k, l
 
-# Create auxillary dictionary from infeasible dictionary D
-def create_aux_dict(c, A, b, dtype):
-    c_aux = np.append(c, -1)
-    A_aux = np.c_[A, -np.ones(A.shape[0], dtype=dtype)]
-    D = Dictionary(c_aux, A_aux, b, dtype=dtype)
-    return D
 
 
 def lp_solve(
@@ -292,39 +282,50 @@ def lp_solve(
     # If LP has an optimal solution the return value is
     # LPResult.OPTIMAL,D, where D is an optimal dictionary.
 
+ 
+
     ### PHASE 1
-    D = Dictionary(c, A, b, dtype)
     # Skip phase 1 if dictionary is feasible
-    if b.min() < 0:
-        D_aux = create_aux_dict(c, A, b, dtype)
-        entering = D_aux.N[2]
-        print(f"Entering variable: x{entering}")
-        # D_aux.pivot(D)
+    if b.min() < eps:
+        D_aux = Dictionary(None, A, b, dtype)
+        # We pivot on the "most infeasible" variable
+        D_aux.pivot(D_aux.N.size - 1, np.argmin(D_aux.C[1:, 0]))
+        # We now have a feasible dictionary
+        while True:
+            k, l = pivotrule(D_aux)
+            if k is None:
+                break
+            D_aux.pivot(k, l)
+        if D_aux.value() < -eps:
+            if verbose: print(f"Problem is infeasible with dictionary:\n{D_aux}")
+            return LPResult.INFEASIBLE, None
+        # Remove auxiliary variable from dictionary
+        aux_index = np.where(D_aux.N == D_aux.N.size)[0][0]
+        D_aux.N = np.delete(D_aux.N, aux_index)
+        D_aux.C = np.delete(D_aux.C, aux_index + 1, axis=1)
+        for i in range(len(c)):
+            if i + 1 in D_aux.B:
+                D_aux.C[0, :] += c[i] * D_aux.C[np.where(D_aux.B == i + 1)[0][0] + 1, :]
+            else:
+                D_aux.C[0, i] += c[i]
+        D = D_aux
+    else:
+        D = Dictionary(c, A, b, dtype) 
 
-    
-    
     ### PHASE 2
-
-    
-    pivotrule = lambda D: bland(D, eps)
-
-    if verbose:
-        print(f"Initial dictionary:\n{D}")
-
+    if verbose: print(f"Initial dictionary:\n{D}")
     while True:
         k, l = pivotrule(D)
         if k is None:
-            print("Optimal solution found.")
+            if verbose: print(f"Optimal solution found with dictionary:\n{D}")
             return LPResult.OPTIMAL, D
         if l is None:
-            print("Unbounded solution found.")
+            if verbose: print(f"Unbounded solution found with dictionary:\n{D}")
             return LPResult.UNBOUNDED, None
         
-        if verbose:
-            print(f"x{D.N[k]} is entering and x{D.B[l]} is leaving:")
+        if verbose: print(f"x{D.N[k]} is entering and x{D.B[l]} is leaving:")
         D.pivot(k, l)
-        if verbose:
-            print(f"New Dictionary after pivot:\n{D}")
+        if verbose: print(f"New Dictionary after pivot:\n{D}")
         
 if __name__ == "__main__":
     c, A, b = (
@@ -332,5 +333,6 @@ if __name__ == "__main__":
         np.array([[-1, 1], [-1, -2], [0, 1]]),
         np.array([-1, -2, 1]),
     )
-    lp_solve(c, A, b, dtype=Fraction, eps=0, pivotrule=lambda D: bland(D, eps=0), verbose=False)
+    res, D = lp_solve(c, A, b, dtype=np.float64, eps=0, pivotrule=lambda D: bland(D, eps=0), verbose=False)
+    print(D)
 
