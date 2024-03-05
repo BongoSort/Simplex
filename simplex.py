@@ -381,6 +381,7 @@ def run_examples():
     D.pivot(2, 2)
     print(D)
     print()
+
     # Example 1 float
     D = Dictionary(c, A, b, np.float64)
     print("Example 1 with np.float64")
@@ -442,7 +443,6 @@ def run_examples():
     print(res)
     print(D)
     print()
-    return
 
     # Integer pivoting
     c, A, b = example1()
