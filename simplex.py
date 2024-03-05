@@ -538,11 +538,6 @@ def time_all_using_solver(solver):
     solver(c, A, b)
     end = timer()
 
-    c, A, b = example2()
-    start2 = timer()
-    solver(c, A, b)
-    end2 = timer()
-
     c, A, b = bland_example()
     start3 = timer()
     solver(c, A, b)
@@ -570,7 +565,6 @@ def time_all_using_solver(solver):
 
     time_ms1 = 1000 * (
         (end - start)
-        + (end2 - start2)
         + (end3 - start3)
         + (end4 - start4)
         + (end5 - start5)
@@ -587,11 +581,6 @@ def time_all_using_solver_with_method(solver, meth):
     solver(c, A, b, method=meth)
     end = timer()
 
-    c, A, b = example2()
-    start2 = timer()
-    solver(c, A, b, method=meth)
-    end2 = timer()
-
     c, A, b = bland_example()
     start3 = timer()
     solver(c, A, b, method=meth)
@@ -619,7 +608,6 @@ def time_all_using_solver_with_method(solver, meth):
 
     time_ms1 = 1000 * (
         (end - start)
-        + (end2 - start2)
         + (end3 - start3)
         + (end4 - start4)
         + (end5 - start5)
