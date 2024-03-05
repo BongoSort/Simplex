@@ -259,6 +259,11 @@ def largest_increase(D, eps):
     # TODO
     return k, l
 
+def create_aux_dict(D):
+    # Create auxillary dictionary
+    # TODO
+    return D
+
 
 def lp_solve(
     c, A, b, dtype=Fraction, eps=0, pivotrule=lambda D: bland(D, eps=0), verbose=False
@@ -285,7 +290,17 @@ def lp_solve(
     # If LP has an optimal solution the return value is
     # LPResult.OPTIMAL,D, where D is an optimal dictionary.
 
+    ### PHASE 1
     D = Dictionary(c, A, b, dtype)
+    # Skip phase 1 of dictionary is feasible
+    if b.min() < 0:
+        a = create_aux_dict()
+
+    
+    
+    ### PHASE 2
+
+    
     pivotrule = lambda D: bland(D, eps)
 
     if verbose:
