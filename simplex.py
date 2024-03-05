@@ -1,8 +1,7 @@
 import numpy as np
 from fractions import Fraction
 from enum import Enum
-from scipy.optimize import linprog
-from timeit import default_timer as timer
+
 
 import warnings
 
@@ -207,12 +206,13 @@ def bland(D, eps):
         print("No leaving variable found: Solution is unbounded.")
         return k, l
     # Get possible leaving variables
-    possible_leaving_variables = [D.B[i] for i in possible_leaving_indices]
-    print(f"Possible leaving variables: {possible_leaving_variables}")
 
-    ratios = [
-        np.divide(D.C[i + 1, 0], D.C[i + 1, k + 1]) for i in possible_leaving_indices
-    ]
+
+    # FOR TESTING
+    # possible_leaving_variables = [D.B[i] for i in possible_leaving_indices]
+    # print(f"Possible leaving variables: {possible_leaving_variables}")
+
+    ratios = [np.divide(D.C[i + 1, 0], D.C[i + 1, k + 1]) for i in possible_leaving_indices]
     # Find the best ratio
     best_ratio = max(ratios)
     best_indices = np.where(np.equal(ratios, best_ratio))[0]
@@ -236,12 +236,8 @@ def largest_coefficient(D, eps):
     # are to be treated as if they were 0
     #
     # Returns k and l such that
-    # k is None if D is Optimal
-    # Otherwise D.N[k] is entering variable
-    # l is None if D is Unbounded
-    # Otherwise D.B[l] is a leaving variable
-
-    k = l = None
+    # k is None if D is Optimrandom_lp
+    k, l = None
     # TODO
     return k, l
 
@@ -291,7 +287,9 @@ def lp_solve(
 
     D = Dictionary(c, A, b, dtype)
     pivotrule = lambda D: bland(D, eps)
-    print(f"Initial dictionary:\n{D}")
+
+    if verbose:
+        print(f"Initial dictionary:\n{D}")
 
     while True:
         k, l = pivotrule(D)
@@ -301,6 +299,10 @@ def lp_solve(
         if l is None:
             print("Unbounded solution found.")
             return LPResult.UNBOUNDED, None
+        print("PIVOTING")
         D.pivot(k, l)
-        print(f"New Dictionary after pivot:\n{D}")
+        if verbose:
+            print(f"x{D.N[k]} is entering and x{D.B[l]} is leaving:")
+            print(f"New Dictionary after pivot:\n{D}")
+        
 

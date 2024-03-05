@@ -1,5 +1,7 @@
 import numpy as np
 from simplex import *
+from scipy.optimize import linprog
+from timeit import default_timer as timer
 
 
 def bland_example():
@@ -192,7 +194,6 @@ def run_bland():
 
 
 def run_timed_example1():
-
     # Solve Example 1 using lp_solve
     c, A, b = example1()
     print("lp_solve Example 1:")
@@ -218,18 +219,7 @@ def run_timed_example1():
     time_ms3 = 1000 * (end3 - start3)
     print(f"time for highs-ds %.4f" % (time_ms3), "ms")
 
-
-def run_random_lp(n, m, sigma):
-    c, A, b = random_lp(n, m, sigma)
-    print("lp_solve Random LP")
-    start = timer()
-    res, D = lp_solve(c, A, b)
-    end = timer()
-    print(f"Hvad er vores tid", end - start)
-
-
 def time_all_using_solver(solver):
-
     c, A, b = example1()
     start = timer()
     solver(c, A, b)
@@ -314,12 +304,40 @@ def time_all_using_solver_with_method(solver, meth):
     print(f"timing for all exercises %.4f" % (time_ms1), "ms")
 
 
+
+def compare_data_types():
+    frac_time = float_time = 0.
+    for i in range(5, 51, 5):
+        c, A, b = random_lp(i, i)
+        start_frac = timer()
+        lp_solve(c, A, b, dtype=Fraction)
+        end_frac = timer()
+        start_float = timer()
+        lp_solve(c, A, b, dtype=np.float64)
+        end_float = timer()
+        frac_time += end_frac - start_frac
+        float_time += end_float - start_float
+    print(f"Fraction time: {frac_time}")
+    print(f"Float time: {float_time}")    
+
+
+
 def main():
     # time_all_using_solver(lp_solve)
     # time_all_using_solver_with_method(linprog, "simplex")
     # time_all_using_solver_with_method(linprog, "highs-ds")
-    c, A, b = example1()
-
+    # c, A, b = random_lp(10, 10)
+    # D = Dictionary(c, A, b)
+    # print(D)
+    # res, D = lp_solve(c, A, b) 
+    # print(res)
+    # print(D)
+    
+    # c, A, b = exercise2_6()
+    # res = linprog(-c, A_ub=A, b_ub=b, method="highs-ds")
+    # lp_solve(c, A, b)
+    # print(res)
+    compare_data_types()
 
 if __name__ == "__main__":
     main()
