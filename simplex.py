@@ -291,7 +291,7 @@ def largest_increase(D, eps):
 
 
 def lp_solve(
-    c, A, b, dtype=Fraction, eps=0, pivotrule=lambda D: largest_coefficient(D, eps=0), verbose=False
+    c, A, b, dtype=Fraction, eps=0, pivotrule=lambda D: largest_increase(D, eps=0), verbose=False
 ):
     # Simplex algorithm
     #

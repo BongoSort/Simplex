@@ -113,6 +113,42 @@ def run_example2():
     print(D)
     print()
 
+def run_example2_with_lp_solve():
+    # Solve Example 2 using lp_solve
+    c, A, b = example2()
+    print("lp_solve Example 2:")
+    res, D = lp_solve(c, A, b)
+    print(res)
+    print(D)
+    print()
+
+def run_exercise2_5_with_lp_solve():
+    # Solve Exercise 2.5 using lp_solve
+    c, A, b = exercise2_5()
+    print("lp_solve Exercise 2.5:")
+    res, D = lp_solve(c, A, b)
+    print(res)
+    print(D)
+    print()
+
+def run_exercise2_6_with_lp_solve():
+    # Solve Exercise 2.6 using lp_solve
+    c, A, b = exercise2_6()
+    print("lp_solve Exercise 2.6:")
+    res, D = lp_solve(c, A, b)
+    print(res)
+    print(D)
+    print()
+
+def run_exercise2_7_with_lp_solve():
+    # Solve Exercise 2.7 using lp_solve
+    c, A, b = exercise2_7()
+    print("lp_solve Exercise 2.7:")
+    res, D = lp_solve(c, A, b)
+    print(res)
+    print(D)
+    print()
+
 def run_all_examples():
     # Example 1
     run_example1_fraction()
@@ -124,36 +160,16 @@ def run_all_examples():
     run_example2()
 
     # Solve Example 2 using lp_solve
-    c, A, b = example2()
-    print("lp_solve Example 2:")
-    res, D = lp_solve(c, A, b)
-    print(res)
-    print(D)
-    print()
+    run_example2_with_lp_solve()
 
     # Solve Exercise 2.5 using lp_solve
-    c, A, b = exercise2_5()
-    print("lp_solve Exercise 2.5:")
-    res, D = lp_solve(c, A, b)
-    print(res)
-    print(D)
-    print()
+    run_exercise2_5_with_lp_solve()
 
     # Solve Exercise 2.6 using lp_solve
-    c, A, b = exercise2_6()
-    print("lp_solve Exercise 2.6:")
-    res, D = lp_solve(c, A, b)
-    print(res)
-    print(D)
-    print()
+    run_exercise2_6_with_lp_solve()
 
     # Solve Exercise 2.7 using lp_solve
-    c, A, b = exercise2_7()
-    print("lp_solve Exercise 2.7:")
-    res, D = lp_solve(c, A, b)
-    print(res)
-    print(D)
-    print()
+    run_exercise2_7_with_lp_solve()
 
     # Integer pivoting
     c, A, b = example1()
@@ -204,128 +220,17 @@ def run_bland():
     bland(D, 0.000001)
 
 
-def run_timed_example1():
-    # Solve Example 1 using lp_solve
-    c, A, b = example1()
-    print("lp_solve Example 1:")
-    start = timer()
-    res, D = lp_solve(c, A, b)
-    end = timer()
-    print(res)
-    print(D)
-    print()
-
-    time_ms1 = 1000 * (end - start)
-    print(f"time for lp_solve %.4f" % (time_ms1), "ms")
-
-    start2 = timer()
-    res = linprog(c, A, b, method="simplex")
-    end2 = timer()
-    time_ms2 = 1000 * (end2 - start2)
-    print(f"time for simplex %.4f" % (time_ms2), "ms")
-
-    start3 = timer()
-    res = linprog(c, A, b, method="highs-ds")
-    end3 = timer()
-    time_ms3 = 1000 * (end3 - start3)
-    print(f"time for highs-ds %.4f" % (time_ms3), "ms")
-
-def time_all_using_solver(solver):
-    c, A, b = example1()
-    start = timer()
-    solver(c, A, b)
-    end = timer()
-
-    c, A, b = bland_example()
-    start3 = timer()
-    solver(c, A, b)
-    end3 = timer()
-
-    c, A, b = integer_pivoting_example()
-    start4 = timer()
-    solver(c, A, b)
-    end4 = timer()
-
-    c, A, b = exercise2_5()
-    start5 = timer()
-    solver(c, A, b)
-    end5 = timer()
-
-    c, A, b = exercise2_6()
-    start6 = timer()
-    solver(c, A, b)
-    end6 = timer()
-
-    c, A, b = exercise2_7()
-    start7 = timer()
-    solver(c, A, b)
-    end7 = timer()
-
-    time_ms1 = 1000 * (
-        (end - start)
-        + (end3 - start3)
-        + (end4 - start4)
-        + (end5 - start5)
-        + (end6 - start6)
-        + (end7 - start7)
-    )
-    print(f"timing for all exercises %.4f" % (time_ms1), "ms")
-
-
-def time_all_using_solver_with_method(solver, meth):
-
-    c, A, b = example1()
-    start = timer()
-    solver(c, A, b, method=meth)
-    end = timer()
-
-    c, A, b = bland_example()
-    start3 = timer()
-    solver(c, A, b, method=meth)
-    end3 = timer()
-
-    c, A, b = integer_pivoting_example()
-    start4 = timer()
-    solver(c, A, b, method=meth)
-    end4 = timer()
-
-    c, A, b = exercise2_5()
-    start5 = timer()
-    solver(c, A, b, method=meth)
-    end5 = timer()
-
-    c, A, b = exercise2_6()
-    start6 = timer()
-    solver(c, A, b, method=meth)
-    end6 = timer()
-
-    c, A, b = exercise2_7()
-    start7 = timer()
-    solver(c, A, b, method=meth)
-    end7 = timer()
-
-    time_ms1 = 1000 * (
-        (end - start)
-        + (end3 - start3)
-        + (end4 - start4)
-        + (end5 - start5)
-        + (end6 - start6)
-        + (end7 - start7)
-    )
-    print(f"timing for all exercises %.4f" % (time_ms1), "ms")
-
-
 # Comparint the time for lp_solve on feasible dictionaries with different data types
-def compare_data_types(verbose=False):
+def compare_data_types(pivotrule=lambda D: largest_coefficient(D, eps=0), verbose=False):
     frac_time = float_time = 0.
     for i in range(1, 12):
         size = i*5
         c, A, b = random_lp(size, size)
         start_frac = timer()
-        lp_solve(c, A, b, dtype=Fraction, verbose=verbose)
+        lp_solve(c, A, b, dtype=Fraction, verbose=verbose, pivotrule=pivotrule)
         end_frac = timer()
         start_float = timer()
-        lp_solve(c, A, b, dtype=np.float64, verbose=verbose)
+        lp_solve(c, A, b, dtype=np.float64, verbose=verbose, pivotrule=pivotrule)
         end_float = timer()
         frac_time += end_frac - start_frac
         float_time += end_float - start_float
@@ -334,13 +239,13 @@ def compare_data_types(verbose=False):
     print(f"Total time with dtype=np.float64 is: %.4f" % (float_time), "seconds")
 
 # Comparing the time for different solvers on feasible dictionaries with data type np.float64
-def compare_scipy_methods(verbose=False):
+def compare_scipy_methods(pivotrule=lambda D: largest_coefficient(D, eps=0)):
     lp_solve_time = simplex_time = highs_time = 0.
     for i in range(1, 15):
         size = i*5
         c, A, b = random_lp(size, size)
         start_lp = timer()
-        lp_solve(c, A, b, dtype=np.float64, verbose=verbose)
+        lp_solve(c, A, b, dtype=np.float64, pivotrule=pivotrule)
         end_lp = timer()
         start_simplex = timer()
         # Linprog uses minimization, so we need to negate the objective function for both methods
@@ -357,26 +262,38 @@ def compare_scipy_methods(verbose=False):
     print(f"Total time for Simplex is: %.4f" % (simplex_time), "seconds")
     print(f"Total time for Highs is: %.4f" % (highs_time), "seconds")
 
+def compare_pivotrules():
+    bland_time = largest_coefficient_time = largest_increase_time = 0.
+    for i in range(1, 15):
+        size = i*5
+        c, A, b = random_lp(size, size)
+        start_bland = timer()
+        lp_solve(c, A, b, dtype=np.float64, pivotrule=lambda D: bland(D, eps=0))
+        end_bland = timer()
+        start_largest_coefficient = timer()
+        lp_solve(c, A, b, dtype=np.float64, pivotrule=lambda D: largest_coefficient(D, eps=0))
+        end_largest_coefficient = timer()
+        start_largest_increase = timer()
+        lp_solve(c, A, b, dtype=np.float64, pivotrule=lambda D: largest_increase(D, eps=0))
+        end_largest_increase = timer()
+        bland_time += end_bland - start_bland
+        largest_coefficient_time += end_largest_coefficient - start_largest_coefficient
+        largest_increase_time += end_largest_increase - start_largest_increase
+        print(f"Time for size {size} x {size}: Bland {round((end_bland - start_bland) * 1000, 1)} ms, Largest Coefficient {round((end_largest_coefficient - start_largest_coefficient) * 1000, 1)} ms, Largest Increase {round((end_largest_increase - start_largest_increase) * 1000, 1)} ms")
+    print(f"Total time for Bland is: %.4f" % (bland_time), "seconds")
+    print(f"Total time for Largest Coefficient is: %.4f" % (largest_coefficient_time), "seconds")
+    print(f"Total time for Largest Increase is: %.4f" % (largest_increase_time), "seconds")
 
-def run_example_with_both_solvers(example, pivotrule=None):
+def run_example_with_both_solvers(example, pivotrule=None, verbose=False):
     c, A, b = example
-    linprog_res = linprog(-c, A_ub=A, b_ub=b, method="highs-ds")
+    linprog_res = linprog(-c, A_ub=A, b_ub=b, method="highs-ds", verbose=verbose)
     print("linprog result:")
     print(linprog_res)
     lp_res, D = lp_solve(c, A, b, pivotrule=pivotrule, dtype=Fraction)
     print("lp_solve result:")
     print(lp_res, "\n", D)
-
-
-
-def main():
-    # c, A, b = exercise2_6()
-    # D = Dictionary(c, A, b)
-    # res, D = lp_solve(c, A, b, pivotrule=lambda D: largest_increase(D, eps=0.000000001), verbose=True, dtype=Fraction)
-
-    run_example_with_both_solvers(exercise2_7(), pivotrule=lambda D: largest_increase(D, eps=0.000000001))
-
+    
 
 
 if __name__ == "__main__":
-    main()
+    compare_scipy_methods()
