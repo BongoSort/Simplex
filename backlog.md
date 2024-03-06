@@ -1,2 +1,1 @@
-infeasible
-random testing
+swap to bland if cycling?

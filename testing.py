@@ -3,7 +3,7 @@ from simplex import *
 from scipy.optimize import linprog
 from timeit import default_timer as timer
 
-
+# Cycle
 def bland_example():
     return (
         np.array([10, -57, -9, -24]),
@@ -11,7 +11,7 @@ def bland_example():
         np.array([0, 0, 1]),
     )
 
-
+# Optimal
 def example1():
     return (
         np.array([5, 4, 3]),
@@ -19,7 +19,7 @@ def example1():
         np.array([5, 11, 8]),
     )
 
-
+# Infeasible, but can be made feasible
 def example2():
     return (
         np.array([-2, -1]),
@@ -35,7 +35,7 @@ def integer_pivoting_example():
         np.array([7, 5])
     )
 
-
+# Optimal, 5
 def exercise2_5():
     return (
         np.array([1, 3]),
@@ -43,7 +43,7 @@ def exercise2_5():
         np.array([-3, -1, 4]),
     )
 
-
+# Infeasible
 def exercise2_6():
     return (
         np.array([1, 3]),
@@ -51,7 +51,7 @@ def exercise2_6():
         np.array([-3, -1, 2]),
     )
 
-
+# Unbounded
 def exercise2_7():
     return (
         np.array([1, 3]),
@@ -358,13 +358,24 @@ def compare_scipy_methods(verbose=False):
     print(f"Total time for Highs is: %.4f" % (highs_time), "seconds")
 
 
+def run_example_with_both_solvers(example, pivotrule=None):
+    c, A, b = example
+    linprog_res = linprog(-c, A_ub=A, b_ub=b, method="highs-ds")
+    print("linprog result:")
+    print(linprog_res)
+    lp_res, D = lp_solve(c, A, b, pivotrule=pivotrule, dtype=Fraction)
+    print("lp_solve result:")
+    print(lp_res, "\n", D)
+
+
 
 def main():
-    c, A, b = exercise2_5()
-    res = linprog(-c, A_ub=A, b_ub=b, method="highs-ds")
-    print(res)
-    res, D = lp_solve(c, A, b)
-    print(res, "\n", D)
+    # c, A, b = exercise2_6()
+    # D = Dictionary(c, A, b)
+    # res, D = lp_solve(c, A, b, pivotrule=lambda D: largest_increase(D, eps=0.000000001), verbose=True, dtype=Fraction)
+
+    run_example_with_both_solvers(exercise2_7(), pivotrule=lambda D: largest_increase(D, eps=0.000000001))
+
 
 
 if __name__ == "__main__":
