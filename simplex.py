@@ -152,24 +152,18 @@ class Dictionary:
             for i in range(0, self.C.shape[0]):
                 if i != l + 1:
                     self.C[i] *= -pivot_coefficient
-            print(f"self before pivot\n{self}")
             for index, row in enumerate(self.C):
                 if index != l + 1:
                     element_from_pivot_column = self.C[index, k + 1]
                     pivot_row = self.C[l + 1]
                     row_scale = (element_from_pivot_column * pivot_row) // pivot_coefficient
                     self.C[index] = self.C[index] - row_scale
-                    ##############################
-                    print(f"row_scale: {row_scale}")
-                    self.C[index, k + 1] = -row_scale[k + 1] // -pivot_coefficient
-                    ##############################
-            self.C[l + 1, k + 1] = -self.C[l + 1, k + 1] // pivot_coefficient
-            print(f"after pivot\n{self}")
+                    self.C[index, k + 1] = (row_scale[k + 1] // pivot_coefficient) * self.lastpivot
+            self.C[l + 1, k + 1] = -self.C[l + 1, k + 1] // pivot_coefficient * self.lastpivot
             for i in range(0, self.C.shape[0]):
                 if i != l + 1:
                     self.C[i] = self.C[i] // self.lastpivot
             self.lastpivot = -pivot_coefficient
-            print(f"aftter multiplication\n{self}")
         else:
             # Update elements in matrix C
             self.C[l + 1] = -1 / pivot_coefficient * self.C[l + 1]
