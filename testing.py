@@ -296,4 +296,8 @@ def run_example_with_both_solvers(example, pivotrule=None, verbose=False):
 
 
 if __name__ == "__main__":
-    compare_scipy_methods()
+    c, A, b = integer_pivoting_example()
+    D = Dictionary(c, A, b, int)
+    D.pivot(0, 0)
+    D.pivot(1, 1)
+    # res, D = lp_solve(c, A, b, pivotrule=lambda D: largest_coefficient(D, eps=0), dtype=int, verbose=True)
