@@ -139,7 +139,7 @@ class Dictionary:
         else:
             return self.C[0, 0]
 
-    def pivot(self, k, l):
+    def pivot(self, k, l, aux_pivot=False):
         # Pivot Dictionary with N[k] entering and B[l] leaving
         # Performs integer pivoting if self.dtype==int
         # k = entering variable (column index)
@@ -148,47 +148,33 @@ class Dictionary:
         # save pivot coefficient
         pivot_coefficient = self.C[l + 1, k + 1]
 
-        if self.dtype == int:
+        def div(a, b):
+            if self.dtype == int:
+                return a // b
+            else:
+                return a / b
+
+        if self.dtype == int and not aux_pivot:
             for i in range(0, self.C.shape[0]):
                 if i != l + 1:
                     self.C[i] *= -pivot_coefficient
-            for index, row in enumerate(self.C):
-                if index != l + 1:
-                    element_from_pivot_column = self.C[index, k + 1]
-                    pivot_row = self.C[l + 1]
-                    row_scale = (
-                        element_from_pivot_column * pivot_row
-                    ) // pivot_coefficient
-                    self.C[index] = self.C[index] - row_scale
-                    self.C[index, k + 1] = (
-                        row_scale[k + 1] // pivot_coefficient
-                    ) * self.lastpivot
-            self.C[l + 1, k + 1] = (
-                -self.C[l + 1, k + 1] // pivot_coefficient * self.lastpivot
-            )
+
+        # Main pivot operation
+        pivot_col = self.C[:, k + 1].copy()
+        pivot_row = self.C[l + 1].copy()
+        self.C = self.C - div(np.outer(pivot_row, pivot_col).T, pivot_coefficient)
+        self.C[l + 1] = div(-pivot_row, pivot_coefficient)
+        self.C[:, k + 1] = div(pivot_col, pivot_coefficient)
+        self.C[l + 1, k + 1] = div(1, pivot_coefficient)
+
+        if self.dtype == int and not aux_pivot:
             for i in range(0, self.C.shape[0]):
                 if i != l + 1:
                     self.C[i] = self.C[i] // self.lastpivot
             self.lastpivot = -pivot_coefficient
-        else:
-            # Update elements in matrix C
-            self.C[l + 1] *= -1 / pivot_coefficient
-            # print(f"self.C[l + 1]: {self.C[l + 1]}")
-            for index, value in enumerate(self.C):
-                if index != l + 1:
-                    element_from_pivot_column = self.C[index, k + 1]
-                    pivot_row = self.C[l + 1]
-                    row_scale = element_from_pivot_column * pivot_row
-                    self.C[index] = self.C[index] + row_scale
-                    self.C[index, k + 1] = -row_scale[k + 1] / pivot_coefficient
-
-            # Update pivot coefficient
-            self.C[l + 1, k + 1] = 1 / pivot_coefficient
 
         # Update N and B
         self.N[k], self.B[l] = self.B[l], self.N[k]
-        # division
-        # print(f"dictionary after division: \n{self}")
 
 
 class LPResult(Enum):
@@ -318,7 +304,6 @@ def largest_increase(D, eps):
 
     if largest_increase == None:
         return min(possible_entering_indices), None
-
     return k, l
 
 
@@ -328,8 +313,8 @@ def lp_solve(
     b,
     dtype=Fraction,
     eps=0,
-    pivotrule=lambda D: largest_increase(D, eps=0),
-    verbose=False,
+    pivotrule=lambda D: largest_coefficient(D, eps=0),
+    verbose=False
 ):
     # Simplex algorithm
     #
@@ -364,23 +349,34 @@ def lp_solve(
             print(
                 f"Pivoting on entering variable {D_aux.varnames[D_aux.N[D_aux.N.size - 1]]} and leaving {D_aux.varnames[D_aux.B[np.argmin(D_aux.C[1:, 0])]]}"
             )
-        D_aux.pivot(D_aux.N.size - 1, np.argmin(D_aux.C[1:, 0]))
+        D_aux.pivot(D_aux.N.size - 1, np.argmin(D_aux.C[1:, 0]), aux_pivot=True)
         if verbose:
             print(f"Auxilliary dictionary after pivot:\n{D_aux}")
         # We now have a feasible dictionary
+        pivot_counter = 0
         while True:
+            if pivot_counter == 1000:
+                if verbose:
+                    print(f"Too many pivots, cycling detected. Switching to Bland's rule.")
+                    pivotrule = lambda D: bland(D, eps)
             k, l = pivotrule(D_aux)
             if k is None:
                 if verbose:
-                    print(
-                        f"Optimal value {D_aux.value()} found, constructing feasible dictionary."
-                    )
+                    if D_aux.value() < -eps:
+                        print(
+                            f"Optimal value {D_aux.value()} found, problem is infeasible."
+                        )
+                    else:
+                        print(
+                            f"Optimal value {D_aux.value()} found, constructing feasible dictionary."
+                        )
                 break
             if verbose:
                 print(
                     f"Pivoting on entering variable {D_aux.varnames[D_aux.N[k]]} and leaving {D_aux.varnames[D_aux.B[l]]}"
                 )
             D_aux.pivot(k, l)
+            pivot_counter += 1
             if verbose:
                 print(f"Auxilliary dictionary after pivot:\n{D_aux}")
         if D_aux.value() < -eps:
@@ -404,8 +400,9 @@ def lp_solve(
         if verbose:
             print(f"Initial dictionary is feasible\n{D}\nContinuing to phase 2.")
 
-    pivot_counter = 0
+    
     # Phase 2
+    pivot_counter = 0
     while True:
         if pivot_counter == 1000:
             if verbose:
