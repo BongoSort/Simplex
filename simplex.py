@@ -156,10 +156,16 @@ class Dictionary:
                 if index != l + 1:
                     element_from_pivot_column = self.C[index, k + 1]
                     pivot_row = self.C[l + 1]
-                    row_scale = (element_from_pivot_column * pivot_row) // pivot_coefficient
+                    row_scale = (
+                        element_from_pivot_column * pivot_row
+                    ) // pivot_coefficient
                     self.C[index] = self.C[index] - row_scale
-                    self.C[index, k + 1] = (row_scale[k + 1] // pivot_coefficient) * self.lastpivot
-            self.C[l + 1, k + 1] = -self.C[l + 1, k + 1] // pivot_coefficient * self.lastpivot
+                    self.C[index, k + 1] = (
+                        row_scale[k + 1] // pivot_coefficient
+                    ) * self.lastpivot
+            self.C[l + 1, k + 1] = (
+                -self.C[l + 1, k + 1] // pivot_coefficient * self.lastpivot
+            )
             for i in range(0, self.C.shape[0]):
                 if i != l + 1:
                     self.C[i] = self.C[i] // self.lastpivot
@@ -181,8 +187,9 @@ class Dictionary:
 
         # Update N and B
         self.N[k], self.B[l] = self.B[l], self.N[k]
-        # division  
-        # print(f"dictionary after division: \n{self}") 
+        # division
+        # print(f"dictionary after division: \n{self}")
+
 
 class LPResult(Enum):
     OPTIMAL = 1
@@ -219,7 +226,9 @@ def bland(D, eps):
     if len(possible_leaving_indices) == 0:
         return k, l
 
-    ratios = [np.divide(D.C[i + 1, 0], D.C[i + 1, k + 1]) for i in possible_leaving_indices]
+    ratios = [
+        np.divide(D.C[i + 1, 0], D.C[i + 1, k + 1]) for i in possible_leaving_indices
+    ]
     # Find the best ratio
     best_ratio = max(ratios)
     best_indices = np.where(np.equal(ratios, best_ratio))[0]
@@ -230,7 +239,7 @@ def bland(D, eps):
     return k, l
 
 
-def largest_coefficient(D,eps):
+def largest_coefficient(D, eps):
     # Assumes a feasible dictionary D and find entering and leaving
     # variables according to the Largest Coefficient rule.
     #
@@ -242,14 +251,14 @@ def largest_coefficient(D,eps):
     # Otherwise D.N[k] is entering variable
     # l is None if D is Unbounded
     # Otherwise D.B[l] is a leaving variable
-    
-    k=l=None
+
+    k = l = None
 
     # Find entering variable, choose the largest, and if there are more than one choose the one with the smallest index
-    if D.C[0,1:].max() < eps:
+    if D.C[0, 1:].max() < eps:
         return k, l
-    
-    k = np.argmax(D.C[0,1:])
+
+    k = np.argmax(D.C[0, 1:])
 
     # find leaving variable
     # Find the possible leaving indices
@@ -257,12 +266,14 @@ def largest_coefficient(D,eps):
     if len(possible_leaving_indices) == 0:
         return k, l
 
-    ratios = [np.divide(D.C[i + 1, 0], D.C[i + 1, k + 1]) for i in possible_leaving_indices]
+    ratios = [
+        np.divide(D.C[i + 1, 0], D.C[i + 1, k + 1]) for i in possible_leaving_indices
+    ]
     # Find the best ratio
     best_ratio_index = np.argmax(ratios)
     l = possible_leaving_indices[best_ratio_index]
 
-    return k,l
+    return k, l
 
 
 def largest_increase(D, eps):
@@ -279,7 +290,7 @@ def largest_increase(D, eps):
     # Otherwise D.B[l] is a leaving variable
 
     k = l = None
-    
+
     # Find positive coefficients
     possible_entering_indices = [i for i in np.where(D.C[0, 1:] > eps)[0]]
     if len(possible_entering_indices) == 0:
@@ -287,15 +298,18 @@ def largest_increase(D, eps):
 
     # Calculate the increase for each variable
     largest_increase = None
-    for i in possible_entering_indices: # i is column index
+    for i in possible_entering_indices:  # i is column index
         possible_leaving_indices = [j for j in np.where(D.C[1:, i + 1] < -eps)[0]]
         if len(possible_leaving_indices) == 0:
             continue
 
         # Find the best ratio
-        ratios = [np.divide(D.C[j + 1, 0], D.C[j + 1, i + 1]) for j in possible_leaving_indices]
+        ratios = [
+            np.divide(D.C[j + 1, 0], D.C[j + 1, i + 1])
+            for j in possible_leaving_indices
+        ]
         best_ratio_index = np.argmax(ratios)
-        column_increase = - D.C[0, i + 1] * ratios[best_ratio_index]
+        column_increase = -D.C[0, i + 1] * ratios[best_ratio_index]
 
         if (largest_increase == None) or (column_increase > largest_increase):
             largest_increase = column_increase
@@ -304,13 +318,18 @@ def largest_increase(D, eps):
 
     if largest_increase == None:
         return min(possible_entering_indices), None
-        
+
     return k, l
 
 
-
 def lp_solve(
-    c, A, b, dtype=Fraction, eps=0, pivotrule=lambda D: largest_increase(D, eps=0), verbose=False
+    c,
+    A,
+    b,
+    dtype=Fraction,
+    eps=0,
+    pivotrule=lambda D: largest_increase(D, eps=0),
+    verbose=False,
 ):
     # Simplex algorithm
     #
@@ -338,25 +357,38 @@ def lp_solve(
     # Skip phase 1 if dictionary is feasible
     if b.min() < eps:
         D_aux = Dictionary(None, A, b, dtype)
-        if verbose: print(f"Initial auxillary dictionary:\n{D_aux}")
+        if verbose:
+            print(f"Initial auxillary dictionary:\n{D_aux}")
         # We pivot on the "most infeasible" variable
-        if verbose: print(f"Pivoting on entering variable {D_aux.varnames[D_aux.N[D_aux.N.size - 1]]} and leaving {D_aux.varnames[D_aux.B[np.argmin(D_aux.C[1:, 0])]]}")
+        if verbose:
+            print(
+                f"Pivoting on entering variable {D_aux.varnames[D_aux.N[D_aux.N.size - 1]]} and leaving {D_aux.varnames[D_aux.B[np.argmin(D_aux.C[1:, 0])]]}"
+            )
         D_aux.pivot(D_aux.N.size - 1, np.argmin(D_aux.C[1:, 0]))
-        if verbose: print(f"Auxilliary dictionary after pivot:\n{D_aux}")
+        if verbose:
+            print(f"Auxilliary dictionary after pivot:\n{D_aux}")
         # We now have a feasible dictionary
         while True:
             k, l = pivotrule(D_aux)
             if k is None:
-                if verbose: print(f"Optimal value {D_aux.value()} found, constructing feasible dictionary.")
+                if verbose:
+                    print(
+                        f"Optimal value {D_aux.value()} found, constructing feasible dictionary."
+                    )
                 break
-            if verbose: print(f"Pivoting on entering variable {D_aux.varnames[D_aux.N[k]]} and leaving {D_aux.varnames[D_aux.B[l]]}")
+            if verbose:
+                print(
+                    f"Pivoting on entering variable {D_aux.varnames[D_aux.N[k]]} and leaving {D_aux.varnames[D_aux.B[l]]}"
+                )
             D_aux.pivot(k, l)
-            if verbose: print(f"Auxilliary dictionary after pivot:\n{D_aux}")
+            if verbose:
+                print(f"Auxilliary dictionary after pivot:\n{D_aux}")
         if D_aux.value() < -eps:
-            if verbose: print(f"Problem is infeasible with dictionary:\n{D_aux}")
+            if verbose:
+                print(f"Problem is infeasible with dictionary:\n{D_aux}")
             return LPResult.INFEASIBLE, None
         # Remove auxiliary variable from dictionary
-        aux_index = np.where(D_aux.N == D_aux.N.size)[0][0]
+        aux_index = np.where(D_aux.N == D_aux.N.size)[0]
         D_aux.N = np.delete(D_aux.N, aux_index)
         D_aux.C = np.delete(D_aux.C, aux_index + 1, axis=1)
         for i in range(len(c)):
@@ -365,28 +397,33 @@ def lp_solve(
             else:
                 D_aux.C[0, i] += c[i]
         D = D_aux
-        if verbose: print(f"New feasible dictionary:\n{D}\nContinuing to phase 2.") 
+        if verbose:
+            print(f"New feasible dictionary:\n{D}\nContinuing to phase 2.")
     else:
-        D = Dictionary(c, A, b, dtype) 
-        if verbose: print(f"Initial dictionary is feasible\n{D}\nContinuing to phase 2.")
+        D = Dictionary(c, A, b, dtype)
+        if verbose:
+            print(f"Initial dictionary is feasible\n{D}\nContinuing to phase 2.")
 
-    
     pivot_counter = 0
     # Phase 2
     while True:
         if pivot_counter == 1000:
-            if verbose: print(f"Too many pivots, cycling detected. Switching to Bland's rule.")
+            if verbose:
+                print(f"Too many pivots, cycling detected. Switching to Bland's rule.")
             pivotrule = lambda D: bland(D, eps)
         k, l = pivotrule(D)
         if k is None:
-            if verbose: print(f"Optimal value {D.value()} found with dictionary:\n{D}")
+            if verbose:
+                print(f"Optimal value {D.value()} found with dictionary:\n{D}")
             return LPResult.OPTIMAL, D
         if l is None:
-            if verbose: print(f"Unbounded solution found with dictionary:\n{D}")
+            if verbose:
+                print(f"Unbounded solution found with dictionary:\n{D}")
             return LPResult.UNBOUNDED, None
-        
-        if verbose: print(f"x{D.N[k]} is entering and x{D.B[l]} is leaving:")
+
+        if verbose:
+            print(f"x{D.N[k]} is entering and x{D.B[l]} is leaving:")
         D.pivot(k, l)
         pivot_counter += 1
-        if verbose: print(f"New Dictionary after pivot:\n{D}")
-
+        if verbose:
+            print(f"New Dictionary after pivot:\n{D}")
