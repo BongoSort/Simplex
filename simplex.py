@@ -172,7 +172,7 @@ class Dictionary:
             self.lastpivot = -pivot_coefficient
         else:
             # Update elements in matrix C
-            self.C[l + 1] = -1 / pivot_coefficient * self.C[l + 1]
+            self.C[l + 1] *= -1 / pivot_coefficient
             # print(f"self.C[l + 1]: {self.C[l + 1]}")
             for index, value in enumerate(self.C):
                 if index != l + 1:
@@ -182,7 +182,7 @@ class Dictionary:
                     self.C[index] = self.C[index] + row_scale
                     self.C[index, k + 1] = -row_scale[k + 1] / pivot_coefficient
 
-            # Update pivot coefficient and pivot row
+            # Update pivot coefficient
             self.C[l + 1, k + 1] = 1 / pivot_coefficient
 
         # Update N and B

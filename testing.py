@@ -326,9 +326,9 @@ def run_example_with_both_solvers(example, pivotrule=None, verbose=False):
 
 
 if __name__ == "__main__":
-    c, A, b = integer_pivoting_example()
+    # c, A, b = integer_pivoting_example()
     # c, A, b = example1()
-    # c, A, b = example2()
+    c, A, b = example2()
     # c, A, b = exercise2_5()
     # c, A, b = exercise2_6()
     # c, A, b = exercise2_7()
@@ -342,6 +342,6 @@ if __name__ == "__main__":
         A,
         b,
         pivotrule=lambda D: bland(D, eps=0),
-        dtype=int,
+        dtype= int,
         verbose=True,
     )
