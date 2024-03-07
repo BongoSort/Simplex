@@ -231,10 +231,8 @@ def run_bland():
     bland(D, 0.000001)
 
 
-# Comparint the time for lp_solve on feasible dictionaries with different data types
-def compare_data_types(
-    pivotrule=lambda D: largest_coefficient(D, eps=0), verbose=False
-):
+# Compare the time for Floats and Fractions using lp_solve on feasible dictionaries
+def compare_data_types(pivotrule=lambda D: bland(D, eps=0), verbose=False):
     frac_time = float_time = 0.0
     for i in range(1, 12):
         size = i * 5
@@ -252,6 +250,27 @@ def compare_data_types(
         )
     print(f"Total time with dtype=Fraction is: %.4f" % (frac_time), "seconds")
     print(f"Total time with dtype=np.float64 is: %.4f" % (float_time), "seconds")
+
+
+# Compare the time for Integers and Fractions using lp_solve on feasible dictionaries
+def compare_data_types_integers(pivotrule=lambda D: bland(D, eps=0), verbose=False):
+    frac_time = int_time = 0
+    for i in range(1, 12):
+        size = i * 5
+        c, A, b = random_lp(size, size)
+        start_frac = timer()
+        lp_solve(c, A, b, dtype=Fraction, verbose=verbose, pivotrule=pivotrule)
+        end_frac = timer()
+        start_int = timer()
+        lp_solve(c, A, b, dtype=int, verbose=verbose, pivotrule=pivotrule)
+        end_int = timer()
+        frac_time += end_frac - start_frac
+        int_time += end_int - start_int
+        print(
+            f"Time for size {size} x {size}: Fraction {round((end_frac - start_frac) * 1000, 1)} ms, Integer {round((end_int - start_int) * 1000, 1)} ms"
+        )
+    print(f"Total time with dtype=Fraction is: %.4f" % (frac_time), "seconds")
+    print(f"Total time with dtype=int is: %.4f" % (int_time), "seconds")
 
 
 # Comparing the time for different solvers on feasible dictionaries with data type np.float64
@@ -326,6 +345,9 @@ def run_example_with_both_solvers(example, pivotrule=None, verbose=False):
 
 
 if __name__ == "__main__":
+    compare_data_types_integers()
+    # compare_data_types()
+    # compare_scipy_methods()
     # c, A, b = integer_pivoting_example()
     # c, A, b = example1()
     c, A, b = example2()
@@ -342,6 +364,6 @@ if __name__ == "__main__":
         A,
         b,
         pivotrule=lambda D: bland(D, eps=0),
-        dtype= int,
+        dtype=int,
         verbose=True,
     )
