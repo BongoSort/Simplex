@@ -2,6 +2,12 @@
 
 Gruppeaflevering 1 Optimering
 
+Svend Christensen, 202106825
+
+Rune Schuster 202001199 
+
+Kasper Johansen 201906970
+
 ## Programming language
 
 The programming project is concerned with implementing and experimenting with the simplex method in Python 3, utilizing the NumPy library.
